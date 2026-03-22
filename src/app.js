@@ -3,10 +3,22 @@ const helmet = require('helmet');
 const setupSwagger = require('./config/swagger');
 const app = express();
 
-// Middleware
-app.use(helmet({
-  contentSecurityPolicy: false  // disabled so Swagger UI loads correctly
-}));
+// Middleware — helmet with CSP configured for Swagger UI
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "unpkg.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "unpkg.com"],
+        imgSrc: ["'self'", "data:", "unpkg.com"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'", "unpkg.com"]
+      }
+    },
+    crossOriginEmbedderPolicy: false  // needed for Swagger UI assets
+  })
+);
 app.use(express.json());
 
 // Swagger docs — available at /api-docs
