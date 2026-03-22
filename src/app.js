@@ -1,28 +1,10 @@
 const express = require('express');
 const helmet = require('helmet');
-const setupSwagger = require('./config/swagger');
 const app = express();
 
-// Middleware — helmet with CSP configured for Swagger UI
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "unpkg.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "unpkg.com"],
-        imgSrc: ["'self'", "data:", "unpkg.com"],
-        connectSrc: ["'self'"],
-        fontSrc: ["'self'", "unpkg.com"]
-      }
-    },
-    crossOriginEmbedderPolicy: false  // needed for Swagger UI assets
-  })
-);
+// Middleware
+app.use(helmet());
 app.use(express.json());
-
-// Swagger docs — available at /api-docs
-setupSwagger(app);
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
@@ -34,8 +16,7 @@ app.get('/health', (req, res) => {
     success: true,
     service: 'user-service',
     status: 'healthy',
-    timestamp: new Date().toISOString(),
-    docs: '/api-docs'
+    timestamp: new Date().toISOString()
   });
 });
 
