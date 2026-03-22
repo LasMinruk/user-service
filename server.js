@@ -1,12 +1,16 @@
+require('dotenv').config();
 const app = require('./src/app');
+const connectDB = require('./src/config/db');
 
-
-// Use environment variable for port, or default to 3001
-// Environment variables are used in cloud deployments
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`✅ User Service is running on port ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/health`);
-  console.log(`👥 Users endpoint: http://localhost:${PORT}/users`);
-});
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`✅ User Service is running on port ${PORT}`);
+    console.log(`📍 Health check: http://localhost:${PORT}/health`);
+    console.log(`👤 Users endpoint: http://localhost:${PORT}/users`);
+  });
+};
+
+startServer();

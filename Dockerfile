@@ -23,6 +23,8 @@ RUN npm install --omit=dev
 # ── Copy source code ────────────────────────────────────────
 COPY . .
 
+ENV MONGO_URI=""
+
 # ── Tell Docker this container listens on port 3001 ─────────
 EXPOSE 3001
 

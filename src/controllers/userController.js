@@ -1,67 +1,38 @@
-const { v4: uuidv4 } = require('uuid');
-const users = require('../data/users');
+const User = require('../models/User');
 
-// GET /users - Returns all users
-const getAllUsers = (req, res) => {
-  res.status(200).json({
-    success: true,
-    count: users.length,
-    data: users
-  });
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, count: users.length, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
-// GET /users/:id - Returns a single user by ID
-const getUserById = (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
-  
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: `User with ID ${req.params.id} not found`
-    });
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: `User with ID ${req.params.id} not found` });
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    if (error.name === 'CastError') return res.status(404).json({ success: false, message: `User with ID ${req.params.id} not found` });
+    res.status(500).json({ success: false, message: error.message });
   }
-
-  res.status(200).json({
-    success: true,
-    data: user
-  });
 };
 
-// POST /users - Creates a new user
-const createUser = (req, res) => {
-  const { name, email } = req.body;
+const createUser = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    if (!name || !email) return res.status(400).json({ success: false, message: 'Please provide name and email' });
 
-  // Basic validation
-  if (!name || !email) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide name and email'
-    });
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ success: false, message: 'User with this email already exists' });
+
+    const user = await User.create({ name, email });
+    res.status(201).json({ success: true, message: 'User created successfully', data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
-
-  // Check if email already exists
-  const existingUser = users.find(u => u.email === email);
-  if (existingUser) {
-    return res.status(400).json({
-      success: false,
-      message: 'User with this email already exists'
-    });
-  }
-
-  const newUser = {
-    id: `user-${uuidv4().split('-')[0]}`,
-    name,
-    email,
-    createdAt: new Date().toISOString()
-  };
-
-  users.push(newUser);
-
-  res.status(201).json({
-    success: true,
-    message: 'User created successfully',
-    data: newUser
-  });
 };
 
 module.exports = { getAllUsers, getUserById, createUser };

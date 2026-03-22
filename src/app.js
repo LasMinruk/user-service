@@ -1,16 +1,16 @@
 const express = require('express');
+const helmet = require('helmet');
 const app = express();
 
-// Middleware - tells Express to parse incoming JSON requests
+// Middleware
+app.use(helmet());
 app.use(express.json());
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
-
-// Mount routes - all user routes start with /users
 app.use('/users', userRoutes);
 
-// Health check endpoint - used by AWS to check if service is running
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -20,7 +20,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Handle unknown routes - Express 5 compatible way
+// Handle unknown routes
 app.use((req, res) => {
   res.status(404).json({
     success: false,
