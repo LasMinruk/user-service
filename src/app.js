@@ -1,10 +1,16 @@
 const express = require('express');
 const helmet = require('helmet');
+const setupSwagger = require('./config/swagger');
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false  // disabled so Swagger UI loads correctly
+}));
 app.use(express.json());
+
+// Swagger docs — available at /api-docs
+setupSwagger(app);
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
@@ -16,7 +22,8 @@ app.get('/health', (req, res) => {
     success: true,
     service: 'user-service',
     status: 'healthy',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    docs: '/api-docs'
   });
 });
 
