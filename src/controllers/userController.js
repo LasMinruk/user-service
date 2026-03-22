@@ -23,13 +23,32 @@ const getUserById = async (req, res) => {
 const createUser = async (req, res) => {
   try {
     const { name, email } = req.body;
-    if (!name || !email) return res.status(400).json({ success: false, message: 'Please provide name and email' });
 
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ success: false, message: 'User with this email already exists' });
+    if (!name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide name and email'
+      });
+    }
 
-    const user = await User.create({ name, email });
-    res.status(201).json({ success: true, message: 'User created successfully', data: user });
+    // ✅ Sanitize: explicitly cast to string to prevent NoSQL injection
+    const sanitizedEmail = String(email).toLowerCase().trim();
+    const sanitizedName = String(name).trim();
+
+    const existing = await User.findOne({ email: sanitizedEmail });
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email already exists'
+      });
+    }
+
+    const user = await User.create({ name: sanitizedName, email: sanitizedEmail });
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: user
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
